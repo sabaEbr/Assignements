@@ -2,8 +2,8 @@ echo off
 
 cd assignements
 
-javac Assignement3.java
+javac Assignement1.java
 REM java is turned into .class
-java Assignement3 Question1
+java Assignement1 Question1
 
 read -p "Press enter to continue" nothing
