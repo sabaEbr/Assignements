@@ -48,13 +48,95 @@ public class PlayState extends GameState {
     public void update(){
         for(int x = 0; x < nCross; x++){
             for(int y = 0; y < nCross; y++){
-                if(player1.getTokenValue(x, y) == 1){
-                    if (player2.getTokenValue(x-1, y) == 1 && player2.getTokenValue(x+1, y) == 1 && player2.getTokenValue(x, y-1) == 1 &&  player2.getTokenValue(x, y+1) == 1){
-                        player1.resetTokenPos(x, y);
+                if (x == 0 && y == 0){
+                    if (player1.getTokenValue(x, y) == 1){
+                        if (player2.getTokenValue(x+1, y) == 1 && player2.getTokenValue(x, y+1) == 1 ) {
+                            player1.resetTokenPos(x, y);
+                        }
+                    } else if(player2.getTokenValue(x, y) == 1){
+                        if (player1.getTokenValue(x+1, y) == 1 && player1.getTokenValue(x, y+1) == 1 ){
+                            player2.resetTokenPos(x, y);
+                        }
                     }
-                } else if(player2.getTokenValue(x, y) == 1){
-                    if (player1.getTokenValue(x-1, y) == 1 && player1.getTokenValue(x+1, y) == 1 && player1.getTokenValue(x, y-1) == 1 &&  player1.getTokenValue(x, y+1) == 1){
-                        player2.resetTokenPos(x, y);
+                } else if (x == nCross - 1 && y == 0){
+                    if (player1.getTokenValue(x, y) == 1){
+                        if (player2.getTokenValue(x-1, y) == 1 && player2.getTokenValue(x, y+1) == 1 ) {
+                            player1.resetTokenPos(x, y);
+                        }
+                    } else if(player2.getTokenValue(x, y) == 1){
+                        if (player1.getTokenValue(x-1, y) == 1 && player1.getTokenValue(x, y+1) == 1 ){
+                            player2.resetTokenPos(x, y);
+                        }
+                    }
+                } else if (x == 0 && y == nCross - 1){
+                    if (player1.getTokenValue(x, y) == 1){
+                        if (player2.getTokenValue(x+1, y) == 1 && player2.getTokenValue(x, y-1) == 1 ) {
+                            player1.resetTokenPos(x, y);
+                        }
+                    } else if(player2.getTokenValue(x, y) == 1){
+                        if (player1.getTokenValue(x+1, y) == 1 && player1.getTokenValue(x, y-1) == 1 ){
+                            player2.resetTokenPos(x, y);
+                        }
+                    }
+                } else if (x == nCross - 1 && y == nCross - 1){
+                    if (player1.getTokenValue(x, y) == 1){
+                        if (player2.getTokenValue(x-1, y) == 1 && player2.getTokenValue(x, y-1) == 1 ) {
+                            player1.resetTokenPos(x, y);
+                        }
+                    } else if(player2.getTokenValue(x, y) == 1){
+                        if (player1.getTokenValue(x-1, y) == 1 && player1.getTokenValue(x, y-1) == 1 ){
+                            player2.resetTokenPos(x, y);
+                        }
+                    }
+                } else if (x == 0){
+                    if (player1.getTokenValue(x, y) == 1){
+                        if (player2.getTokenValue(x+1, y) == 1 && player2.getTokenValue(x, y+1) == 1  && player2.getTokenValue(x, y-1) == 1) {
+                            player1.resetTokenPos(x, y);
+                        }
+                    } else if(player2.getTokenValue(x, y) == 1){
+                        if (player1.getTokenValue(x+1, y) == 1 && player1.getTokenValue(x, y+1) == 1 && player1.getTokenValue(x, y-1) == 1){
+                            player2.resetTokenPos(x, y);
+                        }
+                    }
+                } else if (x == nCross - 1){
+                    if (player1.getTokenValue(x, y) == 1){
+                        if (player2.getTokenValue(x-1, y) == 1 && player2.getTokenValue(x, y+1) == 1  && player2.getTokenValue(x, y-1) == 1) {
+                            player1.resetTokenPos(x, y);
+                        }
+                    } else if(player2.getTokenValue(x, y) == 1){
+                        if (player1.getTokenValue(x-1, y) == 1 && player1.getTokenValue(x, y+1) == 1 && player1.getTokenValue(x, y-1) == 1){
+                            player2.resetTokenPos(x, y);
+                        }
+                    }
+                } else if (y == 0){
+                    if (player1.getTokenValue(x, y) == 1){
+                        if (player2.getTokenValue(x-1, y) == 1 && player2.getTokenValue(x+1, y) == 1  && player2.getTokenValue(x, y+1) == 1) {
+                            player1.resetTokenPos(x, y);
+                        }
+                    } else if(player2.getTokenValue(x, y) == 1){
+                        if (player1.getTokenValue(x-1, y) == 1 && player1.getTokenValue(x+1, y) == 1 && player1.getTokenValue(x, y+1) == 1){
+                            player2.resetTokenPos(x, y);
+                        }
+                    }
+                } else if (y == nCross - 1){
+                    if (player1.getTokenValue(x, y) == 1){
+                        if (player2.getTokenValue(x-1, y) == 1 && player2.getTokenValue(x+1, y) == 1  && player2.getTokenValue(x, y-1) == 1) {
+                            player1.resetTokenPos(x, y);
+                        }
+                    } else if(player2.getTokenValue(x, y) == 1){
+                        if (player1.getTokenValue(x-1, y) == 1 && player1.getTokenValue(x+1, y) == 1 && player1.getTokenValue(x, y-1) == 1){
+                            player2.resetTokenPos(x, y);
+                        }
+                    }
+                } else {
+                    if(player1.getTokenValue(x, y) == 1){
+                        if (player2.getTokenValue(x-1, y) == 1 && player2.getTokenValue(x+1, y) == 1 && player2.getTokenValue(x, y-1) == 1 &&  player2.getTokenValue(x, y+1) == 1){
+                            player1.resetTokenPos(x, y);
+                        }
+                    } else if(player2.getTokenValue(x, y) == 1){
+                        if (player1.getTokenValue(x-1, y) == 1 && player1.getTokenValue(x+1, y) == 1 && player1.getTokenValue(x, y-1) == 1 &&  player1.getTokenValue(x, y+1) == 1){
+                            player2.resetTokenPos(x, y);
+                        }
                     }
                 }
             }
@@ -102,7 +184,6 @@ public class PlayState extends GameState {
         // Render player Tokens
         player1.render(g);
         player2.render(g);
-        player1.thrpw();
 
     }
 }
