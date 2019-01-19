@@ -5,60 +5,60 @@ import com.GO.game.util.MouseHandler;
 import com.GO.game.states.PlayState;
 
 import java.awt.*;
+import java.util.Random;
 
 public class Entity {
 
-    protected Color color;
-    protected int tokenPos[][];
+    private Color color;
+    private boolean isCPU;
+    private PlayState playStateOwner; // Indicating which game is belongs to
 
-    public Entity(){
-        tokenPos = new int[PlayState.nCross][PlayState.nCross];
+    private int score; // May be needed
+
+    public Entity(Color color, boolean isCPU, PlayState game){
+        this.color = color;
+        this.isCPU = isCPU;
+        playStateOwner = game;
     }
 
-    public int getTokenValue(int x, int y){
-        return tokenPos[x][y];
+    public Color getColor() {
+        return color;
     }
 
-    public void setTokenPos(int x, int y){
-        if (tokenPos[x][y] == 0){
-            tokenPos[x][y] = 1;
-        }
+    public void updateScore(){
+        score = playStateOwner.getScore(this);
     }
 
-    public void resetTokenPos(int x, int y){
-        if (tokenPos[x][y] == 1){
-            tokenPos[x][y] = 0;
-        }
-    }
-
-    public int getTotalScore(){
-        int score = 0;
-        for (int x = 0; x < PlayState.nCross; x++) {
-            for (int y = 0; y < PlayState.nCross; y++) {
-                if (tokenPos[x][y] == 1){
-                    score++;
-                }
-            }
-        }
+    public int getScore() {
         return score;
     }
 
-    public void update(){
+    public boolean isCPU(){
+        return isCPU;
+    }
 
+    public void play(){
+        Random rand = new Random();
+        if(isCPU){
+            int x = PlayState.nCells;
+            int y = PlayState.nCells;
+
+            while(playStateOwner.isOccupied(x, y)){
+                x = rand.nextInt(PlayState.nCells); // randomize x
+                y = rand.nextInt(PlayState.nCells); // randomize y
+            }
+            playStateOwner.addStone(x, y, this);
+        }
+    }
+
+    public void update(){
+        updateScore();
     }
     public void input(MouseHandler mouse, KeyHandler key) {
 
     }
     public void render(Graphics2D g){
-        g.setColor(color);
-        for (int x = 0; x < PlayState.nCross; x++) {
-            for (int y = 0; y < PlayState.nCross; y++) {
-                if (tokenPos[x][y] == 1){
-                    g.fillOval(PlayState.leftTokenExtremity + x * PlayState.tokenWidth, PlayState.topTokenExtremity + y * PlayState.tokenHeight, PlayState.tokenWidth, PlayState.tokenHeight);
-                }
 
-            }
-        }
     }
 
 }

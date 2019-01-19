@@ -1,0 +1,50 @@
+///////////////////////////////////////////////////// Needs to disappear soon
+        // Kill token Rules; all situations covered
+        for(int x = 0; x < nCross; x++){
+            for(int y = 0; y < nCross; y++){
+
+                if(player1.getTokenValue(x, y) == 1 || player2.getTokenValue(x, y) == 1) {
+                    Entity Pvictim = player1.getTokenValue(x, y) == 1 ? player1 : player2; // Players who's token is at risk
+                    Entity Ppredator = player1.getTokenValue(x, y) == 1 ? player2 : player1;  // Player who might steal token
+
+                    if (x == 0 && y == 0) {
+                        if (Ppredator.getTokenValue(x+1, y) == 1 && Ppredator.getTokenValue(x, y+1) == 1 ) {
+                            Pvictim.resetTokenPos(x, y);
+                        }
+                    } else if (x == nCross - 1 && y == 0){
+                        if (Ppredator.getTokenValue(x-1, y) == 1 && Ppredator.getTokenValue(x, y+1) == 1 ) {
+                            Pvictim.resetTokenPos(x, y);
+                        }
+                    } else if (x == 0 && y == nCross - 1) {
+                        if (Ppredator.getTokenValue(x+1, y) == 1 && Ppredator.getTokenValue(x, y-1) == 1 ) {
+                            Pvictim.resetTokenPos(x, y);
+                        }
+                    } else if (x == nCross - 1 && y == nCross - 1) {
+                        if (Ppredator.getTokenValue(x-1, y) == 1 && Ppredator.getTokenValue(x, y-1) == 1 ) {
+                            Pvictim.resetTokenPos(x, y);
+                        }
+                    } else if (x == 0) {
+                        if (Ppredator.getTokenValue(x+1, y) == 1 && Ppredator.getTokenValue(x, y+1) == 1  && Ppredator.getTokenValue(x, y-1) == 1) {
+                            Pvictim.resetTokenPos(x, y);
+                        }
+                    } else if (x == nCross - 1) {
+                        if (Ppredator.getTokenValue(x-1, y) == 1 && Ppredator.getTokenValue(x, y+1) == 1  && Ppredator.getTokenValue(x, y-1) == 1) {
+                            Pvictim.resetTokenPos(x, y);
+                        }
+                    } else if (y == 0) {
+                        if (Ppredator.getTokenValue(x-1, y) == 1 && Ppredator.getTokenValue(x+1, y) == 1  && Ppredator.getTokenValue(x, y+1) == 1) {
+                            Pvictim.resetTokenPos(x, y);
+                        }
+                    } else if (y == nCross - 1) {
+                        if (Ppredator.getTokenValue(x-1, y) == 1 && Ppredator.getTokenValue(x+1, y) == 1  && Ppredator.getTokenValue(x, y-1) == 1) {
+                            Pvictim.resetTokenPos(x, y);
+                        }
+                    } else {
+                        if (Ppredator.getTokenValue(x-1, y) == 1 && Ppredator.getTokenValue(x+1, y) == 1 && Ppredator.getTokenValue(x, y-1) == 1 &&  Ppredator.getTokenValue(x, y+1) == 1){
+                            Pvictim.resetTokenPos(x, y);
+                        }
+                    }
+                }
+            }
+        }
+        ///////////////////////////////////////////////////// Needs to disappear soon

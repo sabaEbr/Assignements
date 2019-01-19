@@ -1,20 +1,32 @@
 package com.GO.game.states;
 
-import com.GO.game.entity.CPU;
-import com.GO.game.entity.Player1;
-import com.GO.game.entity.Player2;
+import com.GO.game.board.Board;
+import com.GO.game.entity.Entity;
+import com.GO.game.entity.Position;
+import com.GO.game.entity.Stone;
 import com.GO.game.graphics.Font;
 import com.GO.game.util.KeyHandler;
 import com.GO.game.util.MouseHandler;
 import com.GO.game.util.Time;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class PlayState extends GameState {
 
+    // PlayMode : PvP or PvC
+    private static int gameMode;
+    private static final int PvP = 0; //player vs player
+    private static final int PvC = 1; //player vs cpu
+    private static final int CvP = 2; // cpu vs player
+
     private Font font;
+    private Board board;
+    private ArrayList<Stone> stones;
+
+    ///////////////////////////////////////////////////// Needs to disappear soon
     public static int nCells = 19;
     public static int nCross = nCells + 1;
     public static int cellWidth = 32;
@@ -33,6 +45,8 @@ public class PlayState extends GameState {
     public static int rightTokenExtremity = rightGridExtremity + tokenWidth/2;
     public static int topTokenExtremity = topGridExtremity - tokenHeight/2;
     public static int bottomTokenExtremity = bottomGridExtremity + tokenHeight/2;
+    ///////////////////////////////////////////////////// Needs to disappear soon
+
 
     // Skip button specs
     public static int skipButtonWidth = 4 * cellWidth;
@@ -42,16 +56,15 @@ public class PlayState extends GameState {
     public static int topSkipExtremity = bottomTokenExtremity + cellHeight;
     public static int bottomSkipExtremity = topSkipExtremity + skipButtonHeight;
 
-    public static Player1 player1;
-    public static Player2 player2;
-    public static CPU cpu;
+    private Entity player1;
+    private Entity player2;
 
-    private Map<String, Integer> hoverPos = new HashMap<String, Integer>();
+    private Position hoverPos;
 
     // Turn management variables
-    public static int turn = 1;
-    public static boolean turnSkip = false;
-    public static boolean previousTurnSkip = false;
+    private static int turn = 1;
+    private static boolean turnSkip = false;
+    private static boolean previousTurnSkip = false;
     private static double turnSkipTimer = System.currentTimeMillis();
     private static double timeBeforeNextTurnSkip = 200.0;
 
@@ -59,124 +72,137 @@ public class PlayState extends GameState {
     private static long startTime;
     private static long currentTime;
 
-    public PlayState(GameStateManager gameStateManager){
+    public PlayState(GameStateManager gameStateManager, int gameMode){
 
         super(gameStateManager);
         //font = new Font("font/font_magic.jpg", 64, 64);
 
-        player1 = new Player1();
-        player2 = new Player2();
-        cpu = new CPU();
+        PlayState.gameMode = gameMode;
 
-        hoverPos.put("x", -1); // Initiate to -1 for invalid position
-        hoverPos.put("y", -1); // Initiate to -1 for invalid position
+        // Build entities for correct gameMode
+        initiateGameMode(gameMode);
+
+        hoverPos = new Position(-1 , -1);// Initiate to -1 for invalid position
 
         startTime = System.currentTimeMillis();
+
+        stones = new ArrayList<>();
     }
 
-    public static int getWinner(){
-        return player1.getTotalScore() > player2.getTotalScore() ? 1 : 2;
+    public void initiateGameMode (int gameMode){
+        // Build entities for correct gameMode
+        switch (gameMode){
+            case PvP : player1 = new Entity(Color.BLACK, false, this);
+                player2 = new Entity(Color.WHITE, false, this);
+                break;
+            case PvC : player1 = new Entity(Color.BLACK, false, this);
+                player2 = new Entity(Color.WHITE, true, this);
+                break;
+            case CvP: player1 = new Entity(Color.BLACK, true, this);
+                player2 = new Entity(Color.WHITE, false, this);
+                break;
+        }
+    }
+
+    public static int getGameMode(){
+        return gameMode;
+    }
+
+    public Entity getPlayer1(){
+        return player1;
+    }
+
+    public Entity getPlayer2(){
+        return player2;
+    }
+
+    public int getScoreP1(){
+        return getScore(player1);
+    }
+
+    public int getScoreP2(){
+        return getScore(player2);
+    }
+
+    public int getScore(Entity player){
+        int score = 0;
+        for(Stone stone : stones) {
+            if (stone.getOwner() == player) {
+                score++;
+            }
+        }
+
+        return score;
+    }
+
+    public int getWinner(){
+        int scoreP1 = getScoreP1();
+        int scoreP2 = getScoreP2();
+
+        if(scoreP1 == scoreP2){
+            return 0;
+        }
+
+        return scoreP1 > scoreP2 ? 1 : 2;
+    }
+
+    public boolean isOccupied(Position position){
+        for(int i = 0; i < stones.size(); i++){
+            if (stones.get(i).getPositionX() == position.getX() && stones.get(i).getPositionY() == position.getY()){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isOccupied(int x, int y){
+        for(int i = 0; i < stones.size(); i++){
+            if (stones.get(i).getPositionX() == x && stones.get(i).getPositionY() == y){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Stone getStone(Position position){
+        return getStone(position.getX(), position.getY());
+    }
+
+    public Stone getStone(int x, int y){
+        if(isOccupied(x, y)){
+           for(int i = 0; i < stones.size(); i++){
+               if(stones.get(i).getPositionX() == x && stones.get(i).getPositionY() == y){
+                   return stones.get(i);
+               }
+           }
+        }
+        // Be careful to verify if isOccupied before using this function as it may be deprecated (java sucks)
+        return null;
+    }
+
+    public boolean addStone(int x, int y, Entity player){
+        if (!isOccupied(x, y)){
+            stones.add(new Stone(x, y, player, this));
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeStone(Stone stone){
+        if (isOccupied(stone.getPositionX(), stone.getPositionY())){
+            stones.remove(stone);
+            return true;
+        }
+        return false;
+    }
+
+    public void cleanUp(ArrayList<Stone> stonesToRem){
+        for(int i = 0; i < stonesToRem.size(); i++){
+            removeStone(stonesToRem.get(i));
+        }
     }
 
     public void update(){
-
-        // Kill token Rules; all situations covered
-        // todo: Optimisation required
-        for(int x = 0; x < nCross; x++){
-            for(int y = 0; y < nCross; y++){
-                if (x == 0 && y == 0){
-                    if (player1.getTokenValue(x, y) == 1){
-                        if (player2.getTokenValue(x+1, y) == 1 && player2.getTokenValue(x, y+1) == 1 ) {
-                            player1.resetTokenPos(x, y);
-                        }
-                    } else if(player2.getTokenValue(x, y) == 1){
-                        if (player1.getTokenValue(x+1, y) == 1 && player1.getTokenValue(x, y+1) == 1 ){
-                            player2.resetTokenPos(x, y);
-                        }
-                    }
-                } else if (x == nCross - 1 && y == 0){
-                    if (player1.getTokenValue(x, y) == 1){
-                        if (player2.getTokenValue(x-1, y) == 1 && player2.getTokenValue(x, y+1) == 1 ) {
-                            player1.resetTokenPos(x, y);
-                        }
-                    } else if(player2.getTokenValue(x, y) == 1){
-                        if (player1.getTokenValue(x-1, y) == 1 && player1.getTokenValue(x, y+1) == 1 ){
-                            player2.resetTokenPos(x, y);
-                        }
-                    }
-                } else if (x == 0 && y == nCross - 1){
-                    if (player1.getTokenValue(x, y) == 1){
-                        if (player2.getTokenValue(x+1, y) == 1 && player2.getTokenValue(x, y-1) == 1 ) {
-                            player1.resetTokenPos(x, y);
-                        }
-                    } else if(player2.getTokenValue(x, y) == 1){
-                        if (player1.getTokenValue(x+1, y) == 1 && player1.getTokenValue(x, y-1) == 1 ){
-                            player2.resetTokenPos(x, y);
-                        }
-                    }
-                } else if (x == nCross - 1 && y == nCross - 1){
-                    if (player1.getTokenValue(x, y) == 1){
-                        if (player2.getTokenValue(x-1, y) == 1 && player2.getTokenValue(x, y-1) == 1 ) {
-                            player1.resetTokenPos(x, y);
-                        }
-                    } else if(player2.getTokenValue(x, y) == 1){
-                        if (player1.getTokenValue(x-1, y) == 1 && player1.getTokenValue(x, y-1) == 1 ){
-                            player2.resetTokenPos(x, y);
-                        }
-                    }
-                } else if (x == 0){
-                    if (player1.getTokenValue(x, y) == 1){
-                        if (player2.getTokenValue(x+1, y) == 1 && player2.getTokenValue(x, y+1) == 1  && player2.getTokenValue(x, y-1) == 1) {
-                            player1.resetTokenPos(x, y);
-                        }
-                    } else if(player2.getTokenValue(x, y) == 1){
-                        if (player1.getTokenValue(x+1, y) == 1 && player1.getTokenValue(x, y+1) == 1 && player1.getTokenValue(x, y-1) == 1){
-                            player2.resetTokenPos(x, y);
-                        }
-                    }
-                } else if (x == nCross - 1){
-                    if (player1.getTokenValue(x, y) == 1){
-                        if (player2.getTokenValue(x-1, y) == 1 && player2.getTokenValue(x, y+1) == 1  && player2.getTokenValue(x, y-1) == 1) {
-                            player1.resetTokenPos(x, y);
-                        }
-                    } else if(player2.getTokenValue(x, y) == 1){
-                        if (player1.getTokenValue(x-1, y) == 1 && player1.getTokenValue(x, y+1) == 1 && player1.getTokenValue(x, y-1) == 1){
-                            player2.resetTokenPos(x, y);
-                        }
-                    }
-                } else if (y == 0){
-                    if (player1.getTokenValue(x, y) == 1){
-                        if (player2.getTokenValue(x-1, y) == 1 && player2.getTokenValue(x+1, y) == 1  && player2.getTokenValue(x, y+1) == 1) {
-                            player1.resetTokenPos(x, y);
-                        }
-                    } else if(player2.getTokenValue(x, y) == 1){
-                        if (player1.getTokenValue(x-1, y) == 1 && player1.getTokenValue(x+1, y) == 1 && player1.getTokenValue(x, y+1) == 1){
-                            player2.resetTokenPos(x, y);
-                        }
-                    }
-                } else if (y == nCross - 1){
-                    if (player1.getTokenValue(x, y) == 1){
-                        if (player2.getTokenValue(x-1, y) == 1 && player2.getTokenValue(x+1, y) == 1  && player2.getTokenValue(x, y-1) == 1) {
-                            player1.resetTokenPos(x, y);
-                        }
-                    } else if(player2.getTokenValue(x, y) == 1){
-                        if (player1.getTokenValue(x-1, y) == 1 && player1.getTokenValue(x+1, y) == 1 && player1.getTokenValue(x, y-1) == 1){
-                            player2.resetTokenPos(x, y);
-                        }
-                    }
-                } else {
-                    if(player1.getTokenValue(x, y) == 1){
-                        if (player2.getTokenValue(x-1, y) == 1 && player2.getTokenValue(x+1, y) == 1 && player2.getTokenValue(x, y-1) == 1 &&  player2.getTokenValue(x, y+1) == 1){
-                            player1.resetTokenPos(x, y);
-                        }
-                    } else if(player2.getTokenValue(x, y) == 1){
-                        if (player1.getTokenValue(x-1, y) == 1 && player1.getTokenValue(x+1, y) == 1 && player1.getTokenValue(x, y-1) == 1 &&  player1.getTokenValue(x, y+1) == 1){
-                            player2.resetTokenPos(x, y);
-                        }
-                    }
-                }
-            }
-        }
 
         // Update turn if turnSkip is signaled
         if (turnSkip) {
@@ -186,6 +212,15 @@ public class PlayState extends GameState {
                 turn = 1;
             }
             turnSkip = false;
+        }
+
+        //Allow CPU players to play if is there turn
+        if(turn == 1 && player1.isCPU()){
+            player1.play();
+            turn = 2;
+        } else if(turn == 2 && player2.isCPU()){
+            player2.play();
+            turn = 1;
         }
 
         player1.update();
@@ -202,16 +237,16 @@ public class PlayState extends GameState {
             int tokenX = (mouse.getX() - PlayState.leftTokenExtremity) / PlayState.tokenWidth;
             int tokenY = (mouse.getY() - PlayState.topTokenExtremity) / PlayState.tokenHeight;
 
-            if(player1.getTokenValue(tokenX, tokenY) != 1 && player2.getTokenValue(tokenX, tokenY) != 1){
-                hoverPos.put("x", tokenX);
-                hoverPos.put("y", tokenY);
+            if(!isOccupied(tokenX, tokenY)){
+                hoverPos.setX(tokenX);
+                hoverPos.setY(tokenY);
             } else {
-                hoverPos.put("x", -1); // Indicates invalid
-                hoverPos.put("y", -1); // Indicates invalid
+                hoverPos.setX(-1); // Indicates invalid
+                hoverPos.setY(-1); // Indicates invalid
             }
         } else{
-            hoverPos.put("x", -1); // Indicates invalid
-            hoverPos.put("y", -1); // Indicates invalid
+            hoverPos.setX(-1); // Indicates invalid
+            hoverPos.setY(-1); // Indicates invalid
         }
 
         // Update turn if Skip is clicked
@@ -231,18 +266,19 @@ public class PlayState extends GameState {
         // If mouse is pressed in a valid position add token for players turn
         if(mouse.getButton() == 1) {
             if (mouse.getX() >= PlayState.leftTokenExtremity && mouse.getX() < PlayState.rightTokenExtremity && mouse.getY() >= PlayState.topTokenExtremity && mouse.getY() < PlayState.bottomTokenExtremity){
-                //tokenPos[(mouse.getX() - PlayState.leftTokenExtremity) / PlayState.tokenWidth][(mouse.getY() - PlayState.topTokenExtremity) / PlayState.tokenHeight] = 1;
                 int tokenX = (mouse.getX() - PlayState.leftTokenExtremity) / PlayState.tokenWidth;
                 int tokenY = (mouse.getY() - PlayState.topTokenExtremity) / PlayState.tokenHeight;
                 if (turn == 1){
-                    if(player2.getTokenValue(tokenX, tokenY) == 0 && player1.getTokenValue(tokenX, tokenY) == 0) {
-                        player1.setTokenPos(tokenX, tokenY);
+                    if(!isOccupied(tokenX, tokenY)) {
+                        addStone(tokenX, tokenY, player1);
+                        getStone(tokenX, tokenY).verifySurrounding(); // Verify surrounding of new stone added to board
                         turn = 2;
                         previousTurnSkip = false; // Set previous turn skip to false because input was valid
                     }
                 } else if(turn == 2) {
-                    if (player1.getTokenValue(tokenX, tokenY) == 0 && player2.getTokenValue(tokenX, tokenY) == 0){
-                        player2.setTokenPos(tokenX, tokenY);
+                    if (!isOccupied(tokenX, tokenY)){
+                        addStone(tokenX, tokenY, player2);
+                        getStone(tokenX, tokenY).verifySurrounding(); // Verify surrounding of new stone added to board
                         turn = 1;
                         previousTurnSkip = false; // Set previous turn skip to false because input was valid
                     }
@@ -265,9 +301,9 @@ public class PlayState extends GameState {
         }
 
         // Render Hover Position
-        if(hoverPos.get("x") != -1 && hoverPos.get("y") != -1) {
+        if(hoverPos.getX() != -1 && hoverPos.getY() != -1) {
             g.setColor(Color.CYAN);
-            g.drawOval(leftTokenExtremity + hoverPos.get("x") * tokenWidth, topTokenExtremity +  hoverPos.get("y") * tokenHeight, tokenWidth, tokenHeight);
+            g.drawOval(leftTokenExtremity + hoverPos.getX() * tokenWidth, topTokenExtremity +  hoverPos.getY() * tokenHeight, tokenWidth, tokenHeight);
         }
 
         // Render Skip Button
@@ -281,9 +317,9 @@ public class PlayState extends GameState {
         g.setColor(Color.BLACK);
         g.drawString("Score : ", 10, 20);
         g.drawString("Player 1 (Black): ", 10, 40);
-        g.drawString(Integer.toString(player1.getTotalScore()), 100, 40);
+        g.drawString(Integer.toString(getScoreP1()), 100, 40);
         g.drawString("Player 2 (White): ", 10, 60);
-        g.drawString(Integer.toString(player2.getTotalScore()), 100, 60);
+        g.drawString(Integer.toString(getScoreP2()), 100, 60);
 
         // Render current player turn
         g.drawString("Current turn : ", 10, 150);
@@ -298,9 +334,10 @@ public class PlayState extends GameState {
         String timeDiff = Time.printDifference(startTime, currentTime);
         g.drawString("Game Time : " + timeDiff, 1100, 20);
 
-        // Render player Tokens
-        player1.render(g);
-        player2.render(g);
+        // Render tokens Tokens
+        for(int i = 0; i < stones.size(); i++){
+            stones.get(i).render(g);
+        }
 
     }
 }

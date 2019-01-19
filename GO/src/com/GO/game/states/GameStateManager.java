@@ -19,8 +19,8 @@ public class GameStateManager {
 
     public GameStateManager(){
         states = new ArrayList<GameState>();
-        states.add(new PlayState(this));
-        states.add(new GameOverState(this));
+        states.add(new PlayState(this, 0));
+        states.add(new GameOverState(this, (PlayState)states.get(PLAY)));
     }
 
     public void setCurrentState(int state){
@@ -33,7 +33,7 @@ public class GameStateManager {
 
     public void add(int state){
         if (state == PLAY){
-            states.add(new PlayState(this));
+            states.add(new PlayState(this, 0));
         }
         if (state == MENU){
             states.add(new MenuState(this));
@@ -42,7 +42,7 @@ public class GameStateManager {
             states.add(new PauseState(this));
         }
         if (state == GAMEOVER){
-            states.add(new GameOverState(this));
+            states.add(new GameOverState(this, (PlayState)states.get(PLAY)));
         }
     }
 

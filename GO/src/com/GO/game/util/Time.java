@@ -24,7 +24,7 @@ public class Time {
         long elapsedSeconds = different / secondsInMilli;
 
         // System.out.printf("%d days, %d hours, %d minutes, %d seconds%n", elapsedDays, elapsedHours, elapsedMinutes, elapsedSeconds);
-        return String.format("%d:%d", elapsedMinutes, elapsedSeconds);
+        return elapsedSeconds < 10 ? String.format("%2d:0%d", elapsedMinutes, elapsedSeconds) : String.format("%2d:%d", elapsedMinutes, elapsedSeconds);
 
     }
 
