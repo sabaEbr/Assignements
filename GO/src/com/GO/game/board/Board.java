@@ -1,6 +1,9 @@
 package com.GO.game.board;
 
+import com.GO.game.entity.Stone;
+
 import java.awt.*;
+import java.util.ArrayList;
 
 public class Board {
     //3 types of grid possible
@@ -28,20 +31,33 @@ public class Board {
     public static int topTokenExtremity = topGridExtremity - tokenHeight/2;
     public static int bottomTokenExtremity = bottomGridExtremity + tokenHeight/2;
 
-    public Board(int dim){
-        if (dim == xNine){
-            setNineGrid();
-        }else if (dim == xThirteen){
-            setThirteenGrid();
-        }else if (dim == xNineteen){
-            setNineteenGrid();
+    public Board(int boardType){
+        if (boardType == xNineteen){
+            initBoard(19);
+        } else if (boardType == xThirteen){
+            initBoard(13);
+        } else if (boardType == xNine){
+            initBoard(9);
+        } else {
+            System.out.println("Error loading board configurations - errno (10)");
+            System.exit(10);
         }
+
     }
-    private void setNineGrid() {
-    }
-    private void setThirteenGrid() {
-    }
-    private void setNineteenGrid() {
+
+    private void initBoard(int boardSize) {
+        nCells = boardSize;
+        nCross = nCells + 1;
+
+        leftGridExtremity = 1280/2-nCells* cellWidth /2;
+        rightGridExtremity = 1280/2+nCells* cellWidth /2;
+        topGridExtremity = 720/2-nCells* cellHeight /2;
+        bottomGridExtremity = 720/2+nCells* cellHeight /2;
+
+        leftTokenExtremity = leftGridExtremity - tokenWidth/2;
+        rightTokenExtremity = rightGridExtremity + tokenWidth/2;
+        topTokenExtremity = topGridExtremity - tokenHeight/2;
+        bottomTokenExtremity = bottomGridExtremity + tokenHeight/2;
     }
 
     public void update(){
@@ -52,7 +68,7 @@ public class Board {
 
     }
 
-    public void render(Graphics2D g){
+    public void render(Graphics2D g, ArrayList<Stone> stones){
         // Grid while playing game
         for(int x = 0; x < nCells; x++) {
             for(int y =0; y < nCells; y++) {
@@ -60,5 +76,14 @@ public class Board {
                 g.drawRect( leftGridExtremity + x * cellWidth, topGridExtremity + y * cellHeight, cellWidth, cellHeight);
             }
         }
+
+        // Stone
+        for(Stone stone : stones){
+            g.setColor(stone.getOwner().getColor());
+            g.fillOval(leftTokenExtremity + stone.getPositionX() * tokenWidth,
+                    topTokenExtremity + stone.getPositionY() * tokenHeight,
+                    tokenWidth, tokenHeight);
+        }
+
     }
 }

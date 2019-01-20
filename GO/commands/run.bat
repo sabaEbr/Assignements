@@ -3,3 +3,5 @@
 cd ..
 java -cp classes com/GO/game/GameLauncher
 @echo "Done - building"
+
+pause

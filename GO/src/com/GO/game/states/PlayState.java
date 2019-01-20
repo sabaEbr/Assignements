@@ -4,25 +4,22 @@ import com.GO.game.board.Board;
 import com.GO.game.entity.Entity;
 import com.GO.game.entity.Position;
 import com.GO.game.entity.Stone;
-import com.GO.game.graphics.Font;
 import com.GO.game.util.KeyHandler;
 import com.GO.game.util.MouseHandler;
 import com.GO.game.util.Time;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+
 
 public class PlayState extends GameState {
 
     // PlayMode : PvP or PvC
-    private static int gameMode;
+    private int gameMode;
     private static final int PvP = 0; //player vs player
     private static final int PvC = 1; //player vs cpu
     private static final int CvP = 2; // cpu vs player
 
-    private Font font;
     private Board board;
     private ArrayList<Stone> stones;
 
@@ -72,12 +69,13 @@ public class PlayState extends GameState {
     private static long startTime;
     private static long currentTime;
 
-    public PlayState(GameStateManager gameStateManager, int gameMode){
+    public PlayState(GameStateManager gameStateManager, int gameMode, int boardType){
 
         super(gameStateManager);
-        //font = new Font("font/font_magic.jpg", 64, 64);
 
-        PlayState.gameMode = gameMode;
+        setBoard(boardType);
+
+        this.gameMode = gameMode;
 
         // Build entities for correct gameMode
         initiateGameMode(gameMode);
@@ -104,8 +102,12 @@ public class PlayState extends GameState {
         }
     }
 
-    public static int getGameMode(){
+    public int getGameMode(){
         return gameMode;
+    }
+
+    public void setBoard(int boardType){
+        board = new Board(boardType);
     }
 
     public Entity getPlayer1(){

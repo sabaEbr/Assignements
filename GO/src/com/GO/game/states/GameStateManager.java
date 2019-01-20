@@ -19,7 +19,7 @@ public class GameStateManager {
 
     public GameStateManager(){
         states = new ArrayList<GameState>();
-        states.add(new PlayState(this, 0));
+        states.add(new PlayState(this, 0, 2));
         states.add(new GameOverState(this, (PlayState)states.get(PLAY)));
     }
 
@@ -33,7 +33,7 @@ public class GameStateManager {
 
     public void add(int state){
         if (state == PLAY){
-            states.add(new PlayState(this, 0));
+            states.add(new PlayState(this, 0, 2));
         }
         if (state == MENU){
             states.add(new MenuState(this));
