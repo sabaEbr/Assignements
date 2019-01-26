@@ -4,7 +4,7 @@ import java.awt.Font.*;
 import java.awt.Color.*;
 import java.awt.Graphics.*;
 import java.awt.*;
-import com.GO.game.entity.Position;
+import com.GO.game.util.Position;
 
 public class StringWriter {
 
@@ -23,7 +23,7 @@ public class StringWriter {
 	
 	public static void writeString(Graphics2D g, String s, Position position) {
 		
-		writeString(g, s, new Font("TimesRoman", Font.BOLD,14), Color.BLACK, position.getX(), position.getY());
+		writeString(g, s, new Font("TimesRoman", Font.PLAIN,12), Color.BLACK, position.getX(), position.getY());
 	
 	}
 

@@ -1,6 +1,7 @@
 package com.GO.game.entity;
 
 import com.GO.game.states.PlayState;
+import com.GO.game.util.Position;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -21,6 +22,16 @@ public class Stone {
 
     public Stone(int x, int y, Entity player, PlayState game){
         position = new Position(x, y);
+
+        owner = player;
+
+        playStateOwner = game;
+
+        setSurroundingPosition();
+    }
+
+    public Stone(Position position, Entity player, PlayState game){
+        this.position = new Position(position); //Deep copy
 
         owner = player;
 
@@ -117,7 +128,6 @@ public class Stone {
     }
 
     public void verifySurrounding(){
-
         if(playStateOwner.isOccupied(posUp)){
             if(playStateOwner.getStone(posUp).getOwner() != owner){
                 attack(posUp);
@@ -143,10 +153,13 @@ public class Stone {
         }
     }
 
+    public void verifySuicideMove(){
+        if (!isFree()) {
+            attack(position);
+        }
+    }
+
     public void render(Graphics2D g){
-        g.setColor(owner.getColor());
-        g.fillOval(PlayState.leftTokenExtremity + position.getX() * PlayState.tokenWidth,
-                PlayState.topTokenExtremity + position.getY() * PlayState.tokenHeight,
-                PlayState.tokenWidth, PlayState.tokenHeight);
+
     }
 }

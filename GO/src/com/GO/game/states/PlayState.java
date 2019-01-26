@@ -1,12 +1,9 @@
 package com.GO.game.states;
 
-import com.GO.game.board.Board;
+import com.GO.game.ui.playstate_ui.Board;
 import com.GO.game.entity.Entity;
-import com.GO.game.entity.Position;
+import com.GO.game.util.*;
 import com.GO.game.entity.Stone;
-import com.GO.game.util.KeyHandler;
-import com.GO.game.util.MouseHandler;
-import com.GO.game.util.Time;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -25,33 +22,30 @@ public class PlayState extends GameState {
 
     ///////////////////////////////////////////////////// Needs to disappear soon
     public static int nCells = 19;
-    public static int nCross = nCells + 1;
     public static int cellWidth = 32;
     public static int cellHeight = 32;
-    public static int tokenWidth = cellWidth;
     public static int tokenHeight = cellHeight;
+    public static int tokenWidth = cellWidth;
 
     //Grid specs
-    public static int leftGridExtremity = 1280/2-nCells* cellWidth /2;
-    public static int rightGridExtremity = 1280/2+nCells* cellWidth /2;
-    public static int topGridExtremity = 720/2-nCells* cellHeight /2;
+
     public static int bottomGridExtremity = 720/2+nCells* cellHeight /2;
+    public static int leftGridExtremity = 1280/2-nCells* cellWidth /2;;
 
     //Token specs
-    public static int leftTokenExtremity = leftGridExtremity - tokenWidth/2;
-    public static int rightTokenExtremity = rightGridExtremity + tokenWidth/2;
-    public static int topTokenExtremity = topGridExtremity - tokenHeight/2;
+
     public static int bottomTokenExtremity = bottomGridExtremity + tokenHeight/2;
-    ///////////////////////////////////////////////////// Needs to disappear soon
+    public static int leftTokenExtremity = leftGridExtremity - tokenWidth/2;
 
 
     // Skip button specs
-    public static int skipButtonWidth = 4 * cellWidth;
+    public static int skipButtonWidth = 3 * cellWidth;
     public static int skipButtonHeight = 3/2 * cellHeight;
-    public static int leftSkipExtremity = 1280/2 - skipButtonWidth / 2;
-    public static int rightSkipExtremity = 1280/2 + skipButtonWidth / 2;
-    public static int topSkipExtremity = bottomTokenExtremity + cellHeight;
-    public static int bottomSkipExtremity = topSkipExtremity + skipButtonHeight;
+    public static int leftSkipExtremity = 150;
+    public static int rightSkipExtremity = leftSkipExtremity + skipButtonWidth;
+    public static int bottomSkipExtremity = bottomGridExtremity;
+    public static int topSkipExtremity = bottomSkipExtremity - cellHeight;
+    ///////////////////////////////////////////////////// Needs to disappear soon
 
     private Entity player1;
     private Entity player2;
@@ -78,7 +72,7 @@ public class PlayState extends GameState {
         this.gameMode = gameMode;
 
         // Build entities for correct gameMode
-        initiateGameMode(gameMode);
+        initiateGameMode();
 
         hoverPos = new Position(-1 , -1);// Initiate to -1 for invalid position
 
@@ -87,7 +81,7 @@ public class PlayState extends GameState {
         stones = new ArrayList<>();
     }
 
-    public void initiateGameMode (int gameMode){
+    public void initiateGameMode (){
         // Build entities for correct gameMode
         switch (gameMode){
             case PvP : player1 = new Entity(Color.BLACK, false, this);
@@ -107,7 +101,7 @@ public class PlayState extends GameState {
     }
 
     public void setBoard(int boardType){
-        board = new Board(boardType);
+        board = new Board(boardType, this);
     }
 
     public Entity getPlayer1(){
@@ -182,12 +176,39 @@ public class PlayState extends GameState {
         return null;
     }
 
+    public boolean addStone(Position position, Entity player){
+        return addStone(position.getX(), position.getY(), player);
+    }
+
     public boolean addStone(int x, int y, Entity player){
         if (!isOccupied(x, y)){
             stones.add(new Stone(x, y, player, this));
             return true;
         }
         return false;
+    }
+
+    public boolean newMove(Position position){
+        // Differentiates from addStone() as it handles turn
+
+        if (turn == 1){
+            if (addStone(position, player1)){
+                turn = 2;
+            } else {
+                return false;
+            }
+        } else if(turn == 2){
+            if (addStone(position, player2)){
+                turn = 1;
+            } else {
+                return false;
+            }
+        }
+        getStone(position).verifySurrounding(); // Verify surrounding of new stone added to board
+        getStone(position).verifySuicideMove(); // Verify if stone is suicidal
+        previousTurnSkip = false; // Set previous turn skip to false because input was valid
+
+        return true;
     }
 
     public boolean removeStone(Stone stone){
@@ -205,7 +226,6 @@ public class PlayState extends GameState {
     }
 
     public void update(){
-
         // Update turn if turnSkip is signaled
         if (turnSkip) {
             if (turn == 1) {
@@ -230,14 +250,15 @@ public class PlayState extends GameState {
     }
 
     public void input(MouseHandler mouse, KeyHandler key){
-        if ( key.up.down){
+        if (key.up.down){
             System.out.println("'W' is being pressed");
         }
 
         // Update hover position
-        if (mouse.getX() >= PlayState.leftTokenExtremity && mouse.getX() < PlayState.rightTokenExtremity && mouse.getY() >= PlayState.topTokenExtremity && mouse.getY() < PlayState.bottomTokenExtremity) {
-            int tokenX = (mouse.getX() - PlayState.leftTokenExtremity) / PlayState.tokenWidth;
-            int tokenY = (mouse.getY() - PlayState.topTokenExtremity) / PlayState.tokenHeight;
+        if (mouse.getX() >= board.leftTokenExtremity && mouse.getX() < board.rightTokenExtremity &&
+                mouse.getY() >= board.topTokenExtremity && mouse.getY() < board.bottomTokenExtremity) {
+            int tokenX = (mouse.getX() - board.leftTokenExtremity) / board.tokenWidth;
+            int tokenY = (mouse.getY() - board.topTokenExtremity) / board.tokenHeight;
 
             if(!isOccupied(tokenX, tokenY)){
                 hoverPos.setX(tokenX);
@@ -265,54 +286,32 @@ public class PlayState extends GameState {
             turnSkipTimer = System.currentTimeMillis();
         }
 
-        // If mouse is pressed in a valid position add token for players turn
-        if(mouse.getButton() == 1) {
-            if (mouse.getX() >= PlayState.leftTokenExtremity && mouse.getX() < PlayState.rightTokenExtremity && mouse.getY() >= PlayState.topTokenExtremity && mouse.getY() < PlayState.bottomTokenExtremity){
-                int tokenX = (mouse.getX() - PlayState.leftTokenExtremity) / PlayState.tokenWidth;
-                int tokenY = (mouse.getY() - PlayState.topTokenExtremity) / PlayState.tokenHeight;
-                if (turn == 1){
-                    if(!isOccupied(tokenX, tokenY)) {
-                        addStone(tokenX, tokenY, player1);
-                        getStone(tokenX, tokenY).verifySurrounding(); // Verify surrounding of new stone added to board
-                        turn = 2;
-                        previousTurnSkip = false; // Set previous turn skip to false because input was valid
-                    }
-                } else if(turn == 2) {
-                    if (!isOccupied(tokenX, tokenY)){
-                        addStone(tokenX, tokenY, player2);
-                        getStone(tokenX, tokenY).verifySurrounding(); // Verify surrounding of new stone added to board
-                        turn = 1;
-                        previousTurnSkip = false; // Set previous turn skip to false because input was valid
-                    }
-                }
 
-            }
-        }
         player1.input(mouse, key);
         player2.input(mouse, key);
+
+        board.input(mouse, key);
 
     }
 
     public void render(Graphics2D g){
-        // Grid while playing game
-        for(int x = 0; x < nCells; x++) {
-            for(int y =0; y < nCells; y++) {
-                g.setColor(Color.BLACK);
-                g.drawRect( leftGridExtremity + x * cellWidth, topGridExtremity + y * cellHeight, cellWidth, cellHeight);
-            }
-        }
+        // Board is responsible of it's ui, stones from playState is required
+        board.render(g, stones);
 
         // Render Hover Position
         if(hoverPos.getX() != -1 && hoverPos.getY() != -1) {
             g.setColor(Color.CYAN);
-            g.drawOval(leftTokenExtremity + hoverPos.getX() * tokenWidth, topTokenExtremity +  hoverPos.getY() * tokenHeight, tokenWidth, tokenHeight);
+            g.drawOval(board.leftTokenExtremity + hoverPos.getX() * board.tokenWidth,
+                    board.topTokenExtremity +  hoverPos.getY() * board.tokenHeight,
+                    board.tokenWidth, board.tokenHeight);
         }
 
         // Render Skip Button
         g.setColor(Color.BLACK);
         g.drawRect(leftSkipExtremity, topSkipExtremity, skipButtonWidth, skipButtonHeight);
         // Todo : Make it look nice
-        g.drawString("Skip Turn", leftSkipExtremity+ 35, topSkipExtremity +20);
+        StringWriter.writeString(g, "Pass", new Position(leftSkipExtremity+35, topSkipExtremity +20));
+//        g.drawString("Skip Turn", leftSkipExtremity+ 35, topSkipExtremity +20);
 
         // Render score board
         // Todo : Make it look nice
@@ -336,10 +335,10 @@ public class PlayState extends GameState {
         String timeDiff = Time.printDifference(startTime, currentTime);
         g.drawString("Game Time : " + timeDiff, 1100, 20);
 
-        // Render tokens Tokens
-        for(int i = 0; i < stones.size(); i++){
-            stones.get(i).render(g);
-        }
+        StringWriter.writeString(g, "GO On The GO", new Font("Helvetica",
+                        Font.ITALIC | Font.BOLD,22),
+                        Color.DARK_GRAY,
+                        new Position(1280/2 - 50 , 30));
 
     }
 }
