@@ -40,6 +40,10 @@ public class PlayStateUI {
         playStateInterface.newMove(x, y);
     }
 
+    public boolean getPlayValidity(){
+        return playStateInterface.getPlayValidity();
+    }
+
     public void update(){
 
     }

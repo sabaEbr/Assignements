@@ -18,7 +18,7 @@ type GameSesh struct{
     GameId uint32 `json:GameId`
 	NPlayers uint8 `json:NPlayers`
 	Turn uint8 `json:Turn`
-	Status string `json:Status`
+	Status uint8 `json:Status`
 	MessageT string `json:MessageT`
 }
  
@@ -44,7 +44,7 @@ func newgame(dataPtr *DataStructPrototype) string{
 	for i:=0; i<len((*dataPtr).Games); i++ {
 		if (*dataPtr).Games[i].NPlayers == 1{
 			(*dataPtr).Games[i].NPlayers = 2
-			(*dataPtr).Games[i].Status = "In progress"
+			(*dataPtr).Games[i].Status = 0
 			newGame = &(*dataPtr).Games[i]
 			// Indicate game was found
 			gameFound = true
@@ -66,7 +66,7 @@ func newgame(dataPtr *DataStructPrototype) string{
 				}
 			}
 		}
-		newGame = &(GameSesh{GameId: ID, NPlayers: 1, Turn: 1, Status: "Searching...", MessageT: ""})
+		newGame = &(GameSesh{GameId: ID, NPlayers: 1, Turn: 1, Status: 2, MessageT: ""})
 		(*dataPtr).Games = append((*dataPtr).Games, *newGame)
 	}
 	
@@ -138,7 +138,7 @@ func terminategame(dataPtr * DataStructPrototype, rawInfo string) string {
 					// Avoid breaking Nplayers 
 					(*dataPtr).Games[i].NPlayers--
 				}
-				(*dataPtr).Games[i].Status = "Ended"
+				(*dataPtr).Games[i].Status = 1
 
 				m, err := json.Marshal(gameUD)
 				if err == nil{

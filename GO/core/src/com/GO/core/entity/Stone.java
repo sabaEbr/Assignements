@@ -160,4 +160,9 @@ public class Stone {
             }
         }
     }
+
+    public String marshall(){
+        return owner.getColor().getRGB() + "(" + Integer.toString(getPositionX()) + "x" +
+                Integer.toString(getPositionY()) + ")";
+    }
 }

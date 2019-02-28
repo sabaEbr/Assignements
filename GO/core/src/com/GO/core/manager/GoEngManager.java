@@ -1,0 +1,25 @@
+package com.GO.core.manager;
+
+
+import com.GO.core.engine.GoBot;
+import com.GO.core.engine.GoEngine;
+import com.GO.core.engine.GoMulti;
+
+
+public class GoEngManager {
+
+    public static final byte PvP = 0; //player vs player
+    public static final byte PvC = 1; //player vs cpu
+    public static final byte CvP = 2; // cpu vs player
+    public static final byte ONL = 3; // online
+
+    public static GoEngine startEngine(int mode, int nCells){
+        switch (mode){
+            case PvP: return new GoEngine(mode, nCells);
+            case PvC: return new GoBot((byte)mode, nCells);
+            case CvP: return new GoBot((byte)mode, nCells);
+            case ONL: return new GoMulti(mode, nCells);
+            default: return null;
+        }
+    }
+}

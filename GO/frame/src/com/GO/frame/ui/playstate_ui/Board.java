@@ -106,7 +106,7 @@ public class Board {
             int tokenX = (mouse.getX() - leftTokenExtremity) / tokenWidth;
             int tokenY = (mouse.getY() - topTokenExtremity) / tokenHeight;
 
-            if(!playStateUI.isOccupied(tokenX, tokenY)){
+            if(!playStateUI.isOccupied(tokenX, tokenY) && playStateUI.getPlayValidity()){
                 hoverPos.setX(tokenX);
                 hoverPos.setY(tokenY);
             } else {
@@ -119,7 +119,7 @@ public class Board {
         }
 
         // If mouse is pressed in a valid position add token for players turn
-        if(mouse.getButton() == 1) {
+        if(mouse.getButton() == 1 && playStateUI.getPlayValidity()) {
             if (mouse.getX() >= leftTokenExtremity && mouse.getX() < rightTokenExtremity &&
                     mouse.getY() >= topTokenExtremity && mouse.getY() < bottomTokenExtremity) {
                 int posX = (mouse.getX() - leftTokenExtremity) / tokenWidth;
@@ -143,7 +143,7 @@ public class Board {
         render(g);
 
         // Render Hover Position
-        if(hoverPos.getX() != -1 && hoverPos.getY() != -1) {
+        if(hoverPos.getX() != -1 && hoverPos.getY() != -1 && playStateUI.getPlayValidity()) {
             g.setColor(Color.CYAN);
             g.drawOval(leftTokenExtremity + hoverPos.getX() * tokenWidth,
                     topTokenExtremity +  hoverPos.getY() * tokenHeight,

@@ -4,19 +4,25 @@ import com.GO.core.entity.Player;
 import com.GO.core.util.*;
 import com.GO.core.entity.Stone;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 import java.awt.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+
 
 /* Go Game Engine
 * API for cross platform application*
 * */
 public class GoEngine {
 
+    protected long gameID;
+    protected byte nPlayers;
+
     // PlayMode : PvP or PvC
-    private int gameMode;
-    public static final int PvP = 0; //player vs player
-    public static final int PvC = 1; //player vs cpu
-    public static final int CvP = 2; // cpu vs player
+    protected int gameMode;
 
     private ArrayList<Stone> stones;
 
@@ -24,22 +30,20 @@ public class GoEngine {
     private Player player2;
 
     // Turn management variables
-    private int turn;
+    protected int turn;
     private static boolean turnSkipMonitor;
 
     // Need the nCells for setting validity bounds
     private int nCells;
 
-    // Status : 0 = In Progress, 1 = End of Game, -1 = Game Error
-    private int status;
+    // Status : 0 = In Progress, 1 = End of Game, -1 = Game Error, 2 = Searching
+    protected int status;
+    protected boolean playValidity; // Block game from being played may be used for online or bot
 
 
     public GoEngine(int gameMode, int nCells){
         this.gameMode = gameMode;
         this.nCells = nCells;
-
-        // Build entities for correct gameMode
-        initiateGameMode();
 
         stones = new ArrayList<>(); // Initialise to empty ArrayList<>
 
@@ -49,22 +53,13 @@ public class GoEngine {
 
         // Init Status to in progress
         status = 0;
+        // Init playValidity to True;
+        playValidity = true;
+
+        player1 = new Player(Color.BLACK, false, this);
+        player2 = new Player(Color.WHITE, false, this);
     }
 
-    public void initiateGameMode (){
-        // Build entities for correct gameMode
-        switch (gameMode){
-            case PvP : player1 = new Player(Color.BLACK, false, this);
-                player2 = new Player(Color.WHITE, false, this);
-                break;
-            case PvC : player1 = new Player(Color.BLACK, false, this);
-                player2 = new Player(Color.WHITE, true, this);
-                break;
-            case CvP: player1 = new Player(Color.BLACK, true, this);
-                player2 = new Player(Color.WHITE, false, this);
-                break;
-        }
-    }
 
     public int getGameMode(){
         return gameMode;
@@ -80,6 +75,10 @@ public class GoEngine {
 
     public int getStatus() {
         return status;
+    }
+
+    public boolean getPlayValidity(){
+        return playValidity;
     }
 
     public Player getPlayer1(){
@@ -227,14 +226,7 @@ public class GoEngine {
     }
 
     public void update(){
-        //Allow CPU players to play if is there turn
-        if(turn == 1 && player1.isCPU()){
-            player1.play();
-            turn = 2;
-        } else if(turn == 2 && player2.isCPU()){
-            player2.play();
-            turn = 1;
-        }
+
     }
 
     public void endGame(){
@@ -244,6 +236,49 @@ public class GoEngine {
         }
 
         status = 1; // Signal End of game
+    }
+
+    public String marshall(){
+        String messageT = "";
+
+        for(Stone stone : stones){
+            messageT += stone.marshall();
+        }
+
+        JSONObject jo = new JSONObject();
+
+        jo.put("GameID", gameID);
+        jo.put("NPlayers", nPlayers);
+        jo.put("Turn", turn);
+        jo.put("Status", status);
+        jo.put("MessageT", messageT);
+
+        return jo.toJSONString();
+    }
+
+    public void unMarshall(String jsonData) throws Exception{
+        JSONObject jo = (JSONObject) new JSONParser().parse(jsonData);
+
+        gameID = (long)jo.get("GameId");
+        nPlayers = ((Long)jo.get("NPlayers")).byteValue();
+        turn = ((Long)jo.get("Turn")).intValue();
+        status = ((Long)jo.get("Status")).intValue();
+
+        ArrayList<String> stonesRep = new ArrayList(Arrays.asList(((String)jo.get("MessageT")).split("\\)")));
+
+        if (!stonesRep.contains("")){
+            cleanUp(stones);
+            for(String stoneRep : stonesRep){
+                String col = stoneRep.split("\\(")[0];
+                int posX = Integer.valueOf(stoneRep.split("\\(")[1].split("x")[0]);
+                int posY = Integer.valueOf(stoneRep.split("\\(")[1].split("x")[1]);
+                if(col.equals(Integer.toString(player1.getColor().getRGB()))){
+                    addStone(posX, posY, player1);
+                } else if(col.equals(Integer.toString(player2.getColor().getRGB()))){
+                    addStone(posX, posY, player2);
+                }
+            }
+        }
     }
 
 }

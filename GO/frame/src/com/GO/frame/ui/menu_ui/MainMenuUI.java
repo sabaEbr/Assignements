@@ -49,8 +49,8 @@ public class MainMenuUI extends UI {
 //            menuStateUI.setGameModeSelection(PlayState.PvC);
 //            menuStateUI.gotoBoardMenu();
         } else if(onlineButton.isClicked(mouse)){
-//            menuStateUI.setGameModeSelection(PlayState.ONL);
-//            menuStateUI.gotoBoardMenu();
+            menuStateUI.setGameModeSelection(PlayState.ONL);
+            menuStateUI.gotoBoardMenu();
         }
     }
 

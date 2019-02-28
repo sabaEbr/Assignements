@@ -1,14 +1,11 @@
 package com.GO.frame.states;
 
-import com.GO.frame.ui.playstate_ui.Board;
 import com.GO.frame.ui.playstate_ui.PlayStateUI;
 import com.GO.frame.util.*;
-import com.GO.core.entity.Player;
-import com.GO.core.entity.Stone;
 import com.GO.core.engine.GoEngine;
+import com.GO.core.manager.GoEngManager;
 
 import java.awt.*;
-import java.util.ArrayList;
 
 
 public class PlayState extends GameState {
@@ -18,10 +15,10 @@ public class PlayState extends GameState {
 
     // PlayMode : PvP or PvC
     private int gameMode;
-    public static final int PvP = 0; //player vs player
-    public static final int PvC = 1; //player vs cpu
-    public static final int CvP = 2; // cpu vs player
-    public static final int ONL = 3; // online
+    public static final int PvP = GoEngManager.PvP; //player vs player
+    public static final int PvC = GoEngManager.PvC; //player vs cpu
+    public static final int CvP = GoEngManager.CvP; // cpu vs player
+    public static final int ONL = GoEngManager.ONL; // online
 
     // Game time variable
     private static long startTime;
@@ -38,7 +35,7 @@ public class PlayState extends GameState {
 
         playStateUI = new PlayStateUI(boardType, this);
 
-        goEngine = new GoEngine(gameMode, playStateUI.getBoard().getnCells());
+        goEngine = GoEngManager.startEngine(gameMode, playStateUI.getBoard().getnCells());
 
     }
 
@@ -84,6 +81,10 @@ public class PlayState extends GameState {
 
     public String getGameTime(){
         return gameTimeString;
+    }
+
+    public boolean getPlayValidity(){
+        return goEngine.getPlayValidity();
     }
 
     public void update(){
