@@ -13,7 +13,7 @@ public class Window extends JFrame{
     int height = gd.getDisplayMode().getHeight();
 
     public Window(){
-        setTitle("GO v0.3.0");
+        setTitle("GO v0.4.0");
 
         setContentPane(new GamePanel(panelWidth, panelHeight));
 

@@ -9,15 +9,16 @@ import( "net/http"
 		"strconv"
 )
 
-// Serve Error := 715 -> string to uint convertion error
-// Serve Error := 815 -> json encription error
-// Serve Error := 816 -> json decription error
+// Serve Error := 715 -> string to uint conversion error
+// Serve Error := 815 -> json encryption error
+// Serve Error := 816 -> json description error
 // Serve Error := 915 -> Invalid game ID
  
 type GameSesh struct{
     GameId uint32 `json:GameId`
 	NPlayers uint8 `json:NPlayers`
 	Turn uint8 `json:Turn`
+    TurnSkip bool `json:TurnSkip`
 	Status uint8 `json:Status`
 	MessageT string `json:MessageT`
 }
@@ -71,85 +72,87 @@ func newgame(dataPtr *DataStructPrototype) string{
 	}
 	
 	m, err := json.Marshal(newGame)
-	if err == nil{
-		return string(m)
+	if err != nil{
+		return "Serve Error := 815"
 	}
-	return "Serve Error := 815"
+	return string(m)
 }
 
 func getgameinfo(dataPtr * DataStructPrototype, ID_s string) string {
 	var getgame *GameSesh
 	ID_u64, err := strconv.ParseUint(ID_s, 10, 32)
-	if err == nil{
-		ID_u32 := (uint32(ID_u64))
-		for _, game := range (*dataPtr).Games{
-			if ID_u32 == game.GameId{
-				getgame = &game
-				break
-			}
-		} 
 
-		if getgame == nil {
-			return "gameid (" + ID_s +") not found"
-		} else {
-			m, err := json.Marshal(getgame)
-			if err == nil{
-				return string(m)
-			}
+	if err != nil{
+		return "Serve Error := 715\nGameID (" + ID_s +") must be unsigned interger"
+	}
+
+	ID_u32 := uint32(ID_u64)
+	for _, game := range (*dataPtr).Games{
+		if ID_u32 == game.GameId{
+			getgame = &game
+			break
+		}
+	}
+
+	if getgame == nil {
+		return "gameid (" + ID_s +") not found"
+	} else {
+		m, err := json.Marshal(getgame)
+		if err != nil{
 			return "Serve Error := 815"
 		}
-	} 
-	
-	return "Serve Error := 715\nGameID (" + ID_s +") must be unsigned interger"
+		return string(m)
+	}
 }
 
 func postgameinfo(dataPtr * DataStructPrototype, rawInfo string) string {
 	gameUD := new(GameSesh)
-	rawjson := json.RawMessage(rawInfo)
-	err := json.Unmarshal(rawjson, gameUD)
+	err := json.Unmarshal(json.RawMessage(rawInfo), gameUD)
 
-	if err == nil{
-		for i:=0; i<len((*dataPtr).Games); i++{
-			if (*dataPtr).Games[i].GameId == (*gameUD).GameId{
-				(*dataPtr).Games[i] = *gameUD
-				
-				m, err := json.Marshal(gameUD)
-				if err == nil{
-					return string(m)
-				}
+	if err != nil{
+		return "Serve Error := 816\n Invalid Game Structure (" + rawInfo + ")"
+	}
+
+	for i:=0; i<len((*dataPtr).Games); i++{
+		if (*dataPtr).Games[i].GameId == (*gameUD).GameId{
+			(*dataPtr).Games[i] = *gameUD
+
+			m, err := json.Marshal(gameUD)
+			if err != nil{
 				return "Serve Error := 815"
 			}
+			return string(m)
 		}
-		return "Serve Error := 915"
 	}
-	return "Serve Error := 816\n Invalid Game Structure (" + string(rawjson) + ")"
+	return "Serve Error := 915"
 }
  
 func terminategame(dataPtr * DataStructPrototype, rawInfo string) string {
 	gameUD := new(GameSesh)
-	rawjson := json.RawMessage(rawInfo)
-	err := json.Unmarshal(rawjson, gameUD)
+	err := json.Unmarshal(json.RawMessage(rawInfo), gameUD)
 
-	if err == nil{
-		for i:=0; i<len((*dataPtr).Games); i++{
-			if (*dataPtr).Games[i].GameId == (*gameUD).GameId{
-				(*dataPtr).Games[i] = *gameUD
-				if (*dataPtr).Games[i].NPlayers != 0{
-					// Avoid breaking Nplayers 
-					(*dataPtr).Games[i].NPlayers--
-				}
-				(*dataPtr).Games[i].Status = 1
+	if err != nil{
+		return "Serve Error := 816\n Invalid Game Structure (" + rawInfo + ")"
+	}
 
-				m, err := json.Marshal(gameUD)
-				if err == nil{
-					return string(m)
-				}
+	for i:=0; i<len((*dataPtr).Games); i++{
+		if (*dataPtr).Games[i].GameId == (*gameUD).GameId{
+			(*dataPtr).Games[i] = *gameUD
+			if (*dataPtr).Games[i].NPlayers != 0{
+				// Avoid breaking Nplayers
+				(*dataPtr).Games[i].NPlayers--
+			}
+			(*dataPtr).Games[i].Status = 1
+
+			m, err := json.Marshal(gameUD)
+			if err != nil{
 				return "Serve Error := 815"
 			}
+			return string(m)
 		}
-		return "Serve Error := 915"
 	}
-	return "Serve Error := 816\n Invalid Game Structure (" + string(rawjson) + ")"
+	return "Serve Error := 915"
+
 }
 
 func (dataPtr *DataStructPrototype) ServeHTTP(w http.ResponseWriter, r *http.Request){

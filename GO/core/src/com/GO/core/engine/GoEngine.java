@@ -152,8 +152,21 @@ public class GoEngine {
         return stones;
     }
 
-    public void setStones(ArrayList<Stone> stones){
+    public void hardSetStones(ArrayList<Stone> stones){
         this.stones = stones;
+    }
+
+    public void softSetStones(ArrayList<Stone> newStones){
+        for(Stone stone : this.stones){
+            if(!Stone.listContains(newStones, stone)){
+                removeStone(stone);
+            }
+        }
+        for(Stone newStone : newStones){
+            if(!Stone.listContains(this.stones, newStone)){
+                this.stones.add(newStone);
+            }
+        }
     }
 
     public boolean positionValidity(Position position){
@@ -238,6 +251,8 @@ public class GoEngine {
         status = 1; // Signal End of game
     }
 
+    @SuppressWarnings("unchecked")
+//    Todo: fix unchecked warning
     public String marshall(){
         String messageT = "";
 
@@ -250,6 +265,7 @@ public class GoEngine {
         jo.put("GameID", gameID);
         jo.put("NPlayers", nPlayers);
         jo.put("Turn", turn);
+        jo.put("TurnSkip", turnSkipMonitor);
         jo.put("Status", status);
         jo.put("MessageT", messageT);
 
@@ -262,22 +278,24 @@ public class GoEngine {
         gameID = (long)jo.get("GameId");
         nPlayers = ((Long)jo.get("NPlayers")).byteValue();
         turn = ((Long)jo.get("Turn")).intValue();
+        turnSkipMonitor = (Boolean)jo.get("TurnSkip");
         status = ((Long)jo.get("Status")).intValue();
 
-        ArrayList<String> stonesRep = new ArrayList(Arrays.asList(((String)jo.get("MessageT")).split("\\)")));
+        ArrayList<String> stonesRep = new ArrayList<>(Arrays.asList(((String)jo.get("MessageT")).split("\\)")));
 
         if (!stonesRep.contains("")){
-            cleanUp(stones);
+            ArrayList<Stone> newStones = new ArrayList<>();
             for(String stoneRep : stonesRep){
                 String col = stoneRep.split("\\(")[0];
                 int posX = Integer.valueOf(stoneRep.split("\\(")[1].split("x")[0]);
                 int posY = Integer.valueOf(stoneRep.split("\\(")[1].split("x")[1]);
                 if(col.equals(Integer.toString(player1.getColor().getRGB()))){
-                    addStone(posX, posY, player1);
+                    newStones.add(new Stone(posX, posY, player1, this));
                 } else if(col.equals(Integer.toString(player2.getColor().getRGB()))){
-                    addStone(posX, posY, player2);
+                    newStones.add(new Stone(posX, posY, player2, this));
                 }
             }
+            softSetStones(newStones);
         }
     }
 

@@ -9,13 +9,11 @@ import java.io.*;
 public class Client {
 
     private String baseURLPath;
-    private String serverPort = "20020";
-    private String serverIP = "127.0.0.1"; // localhost server
 
     protected String msgin = "", msgout = ""; // message input and output strings
 
 
-    public Client() throws IOException {
+    public Client(String serverIP, String serverPort) throws IOException {
         this.baseURLPath = "http://" + serverIP + ":" + serverPort;
 
         msgin = requestHTTP(baseURLPath + "/new");

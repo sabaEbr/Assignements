@@ -8,6 +8,9 @@ import java.io.IOException;
 
 public class GoNetwork extends Client implements Runnable{
 
+    private static String serverPort = "20020";
+    private static String serverIP = "127.0.0.1"; // localhost server
+
     private volatile String jsonGameData;
     private volatile long connectionID;
     private volatile boolean eventSignal; // Signal event to get of post data ready for parsing
@@ -20,7 +23,7 @@ public class GoNetwork extends Client implements Runnable{
     private int updateFreq = 2; // 2 Hz
 
     public GoNetwork() throws Exception{
-        super();
+        super(serverIP, serverPort);
 
         this.jsonGameData = this.msgin;
         setEventSignal(true);
@@ -83,7 +86,6 @@ public class GoNetwork extends Client implements Runnable{
                             this.msgin = super.post(jsonGameData);
                             if(! msgin.equals(this.jsonGameData)){
                                 setJsonGameData(msgin);
-//                                setEventSignal(true);
                                 synchronized (this){
                                     notifyAll();
                                 }

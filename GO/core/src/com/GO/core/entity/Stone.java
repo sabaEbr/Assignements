@@ -68,8 +68,8 @@ public class Stone {
     }
 
     public boolean isEqual(Stone stone){
-        // Only verifies if positions are the same (instead of == operator)
-        return (getPositionX() == stone.getPositionX() && getPositionY() == stone.getPositionY());
+        // Only verifies if positions and owner are the same (instead of == operator)
+        return (getPosition().isEqual(stone.getPosition()) && getOwner() == stone.getOwner());
     }
 
     public boolean isFree(){
@@ -164,5 +164,14 @@ public class Stone {
     public String marshall(){
         return owner.getColor().getRGB() + "(" + Integer.toString(getPositionX()) + "x" +
                 Integer.toString(getPositionY()) + ")";
+    }
+
+    public static boolean listContains(ArrayList<Stone> stonesList, Stone stone){
+       for(Stone stonel: stonesList){
+           if(stonel.isEqual(stone)){
+               return true;
+           }
+       }
+       return false;
     }
 }
