@@ -262,12 +262,13 @@ public class GoEngine {
 
         JSONObject jo = new JSONObject();
 
-        jo.put("GameID", gameID);
-        jo.put("NPlayers", nPlayers);
-        jo.put("Turn", turn);
-        jo.put("TurnSkip", turnSkipMonitor);
-        jo.put("Status", status);
-        jo.put("MessageT", messageT);
+        jo.put("ID", gameID);
+        jo.put("NC", nCells);
+        jo.put("NP", nPlayers);
+        jo.put("TR", turn);
+        jo.put("TS", turnSkipMonitor);
+        jo.put("SS", status);
+        jo.put("MT", messageT);
 
         return jo.toJSONString();
     }
@@ -275,13 +276,14 @@ public class GoEngine {
     public void unMarshall(String jsonData) throws Exception{
         JSONObject jo = (JSONObject) new JSONParser().parse(jsonData);
 
-        gameID = (long)jo.get("GameId");
-        nPlayers = ((Long)jo.get("NPlayers")).byteValue();
-        turn = ((Long)jo.get("Turn")).intValue();
-        turnSkipMonitor = (Boolean)jo.get("TurnSkip");
-        status = ((Long)jo.get("Status")).intValue();
+        gameID = (long)jo.get("ID");
+        nCells = ((Long)jo.get("NC")).intValue();
+        nPlayers = ((Long)jo.get("NP")).byteValue();
+        turn = ((Long)jo.get("TR")).intValue();
+        turnSkipMonitor = (Boolean)jo.get("TS");
+        status = ((Long)jo.get("SS")).intValue();
 
-        ArrayList<String> stonesRep = new ArrayList<>(Arrays.asList(((String)jo.get("MessageT")).split("\\)")));
+        ArrayList<String> stonesRep = new ArrayList<>(Arrays.asList(((String)jo.get("MT")).split("\\)")));
 
         if (!stonesRep.contains("")){
             ArrayList<Stone> newStones = new ArrayList<>();

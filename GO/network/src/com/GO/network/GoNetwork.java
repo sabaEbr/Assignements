@@ -22,8 +22,8 @@ public class GoNetwork extends Client implements Runnable{
 
     private int updateFreq = 2; // 2 Hz
 
-    public GoNetwork() throws Exception{
-        super(serverIP, serverPort);
+    public GoNetwork(byte nCells) throws Exception{
+        super(serverIP, serverPort, nCells);
 
         this.jsonGameData = this.msgin;
         setEventSignal(true);
@@ -38,6 +38,10 @@ public class GoNetwork extends Client implements Runnable{
 
     public void setPostMode(){
         this.mode = postMode;
+    }
+
+    public void setTerminateMode(){
+        this.mode = terminateMode;
     }
 
     public synchronized void setJsonGameData(String jsonGameData){
@@ -72,7 +76,7 @@ public class GoNetwork extends Client implements Runnable{
             if(System.currentTimeMillis() - lastUpdate > 100/updateFreq){
                 if(mode == getMode){
                     try {
-                        this.msgin = super.get(getConnectionID());
+                        this.msgin = super.get(jsonGameData);
                         if(! msgin.equals(this.jsonGameData)){
                             setJsonGameData(msgin);
                             setEventSignal(true);
@@ -105,5 +109,17 @@ public class GoNetwork extends Client implements Runnable{
 
         }
 
+        if (this.mode == terminateMode){
+            try{
+                this.msgin = super.terminate(jsonGameData);
+                synchronized (this){
+                    notifyAll();
+                }
+                setEventSignal(false);
+
+            } catch (IOException e){
+                System.out.println("Error Terminating Game with Server");
+            }
+        }
     }
 }

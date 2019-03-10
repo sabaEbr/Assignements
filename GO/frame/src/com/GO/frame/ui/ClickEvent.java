@@ -2,28 +2,14 @@ package com.GO.frame.ui;
 
 import com.GO.frame.util.MouseHandler;
 
-public class ClickEvent {
-    protected int bottomExtremity;
-    protected int topExtremity;
-    protected int leftExtremity;
-    protected int rightExtremity;
-
-    protected int width;  // Relative to leftExtremity
-    protected int height; // Relative to topExtremity
+public class ClickEvent extends HoverEvent{
 
     public ClickEvent(int leftExtremity, int topExtremity, int width, int height){
-        this.width = width;
-        this.height = height;
-        this.topExtremity = topExtremity;
-        this.leftExtremity = leftExtremity;
-        this.rightExtremity = width + leftExtremity;
-        this.bottomExtremity = height + topExtremity;
+        super(leftExtremity, topExtremity, width, height);
     }
 
     public boolean isClicked(MouseHandler mouse){
-        return (mouse.getX() >= leftExtremity && mouse.getX() <= rightExtremity &&
-                mouse.getY() >= topExtremity && mouse.getY() <= bottomExtremity &&
-                mouse.getButton() == 1);
+        return (super.isHovering(mouse) && mouse.getButton() == 1);
     }
 }
 

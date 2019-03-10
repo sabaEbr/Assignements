@@ -25,11 +25,6 @@ public class Button extends ClickEvent{
 
     }
 
-    public boolean isHovering(MouseHandler mouse){
-        return (mouse.getX() >= leftExtremity && mouse.getX() <= rightExtremity &&
-                mouse.getY() >= topExtremity && mouse.getY() <= bottomExtremity );
-    }
-
     public void setColor(Color color){
         this.color = color;
     }

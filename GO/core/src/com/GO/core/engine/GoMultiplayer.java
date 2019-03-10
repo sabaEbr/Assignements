@@ -14,7 +14,7 @@ public class GoMultiplayer extends GoEngine {
         super(mode, nCells);
 
         try {
-            network = new GoNetwork();
+            network = new GoNetwork((byte)nCells);
             unMarshall(network.getJsonGameData());
             network.setConnectionID(gameID);
         } catch (Exception e){
@@ -30,6 +30,7 @@ public class GoMultiplayer extends GoEngine {
         thread.start();
     }
 
+    @Override
     public boolean newMove(int x, int y){
         if(turn == playerInGame && playValidity) {
             if(super.newMove(x, y)){
@@ -60,28 +61,45 @@ public class GoMultiplayer extends GoEngine {
             super.triggerTurnSwitch();
             playValidity = false;
             network.setJsonGameData(marshall());
-            network.setEventSignal(true);
+            if (status == 1) {
+                network.setTerminateMode();
+            } else {
+                network.setEventSignal(true);
+            }
             try {
-                synchronized (network){
+                synchronized (network) {
                     network.wait();
                 }
-            } catch (InterruptedException e){
+            } catch (InterruptedException e) {
                 e.printStackTrace();
                 System.out.println("Error waiting for turn skip send to Go network");
             }
-            network.setGetMode();
+            if (status != 1) {
+                network.setGetMode();
+            }
         }
     }
 
+    @Override
     public void update(){
         if(network.getEventSignal()) {
             try {
                 unMarshall(network.getJsonGameData());
-                if(turn == playerInGame && status != 2){
+                if(status == 1){
+                    network.setTerminateMode();
+                    try {
+                        synchronized (network) {
+                            network.wait();
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        System.out.println("Error ending game in Go network");
+                    }
+                }else if(turn == playerInGame && status != 2){
                     playValidity = true;
                     network.setPostMode();
+                    network.setEventSignal(false); // Done
                 }
-                network.setEventSignal(false); // Done
             } catch (Exception e){
                 e.printStackTrace();
                 System.out.println("Error updating Go network");

@@ -13,10 +13,10 @@ public class Client {
     protected String msgin = "", msgout = ""; // message input and output strings
 
 
-    public Client(String serverIP, String serverPort) throws IOException {
+    public Client(String serverIP, String serverPort, byte nCells) throws IOException {
         this.baseURLPath = "http://" + serverIP + ":" + serverPort;
 
-        msgin = requestHTTP(baseURLPath + "/new");
+        msgin = requestHTTP(baseURLPath + "/new/" + Byte.toString(nCells));
     }
 
     public String post(String msg) throws IOException{
@@ -27,9 +27,15 @@ public class Client {
 
     }
 
-    public String get(long ID) throws IOException{
+    public String get(String msg) throws IOException{
 
-        msgin = requestHTTP(baseURLPath + "/get/" + Long.toString(ID));
+        msgin = requestHTTP(baseURLPath + "/get/" + msg);
+
+        return msgin;
+    }
+
+    public String terminate(String msg) throws IOException{
+        msgin = requestHTTP(baseURLPath + "/terminate/" + msg);
 
         return msgin;
     }
