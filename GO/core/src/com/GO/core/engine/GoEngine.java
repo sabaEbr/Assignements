@@ -22,7 +22,7 @@ public class GoEngine {
     protected byte nPlayers;
 
     // PlayMode : PvP or PvC
-    protected int gameMode;
+    protected byte gameMode;
 
     private ArrayList<Stone> stones;
 
@@ -34,14 +34,14 @@ public class GoEngine {
     private static boolean turnSkipMonitor;
 
     // Need the nCells for setting validity bounds
-    private int nCells;
+    private byte nCells;
 
     // Status : 0 = In Progress, 1 = End of Game, -1 = Game Error, 2 = Searching
     protected int status;
     protected boolean playValidity; // Block game from being played may be used for online or bot
 
 
-    public GoEngine(int gameMode, int nCells){
+    public GoEngine(byte gameMode, byte nCells){
         this.gameMode = gameMode;
         this.nCells = nCells;
 
@@ -277,7 +277,7 @@ public class GoEngine {
         JSONObject jo = (JSONObject) new JSONParser().parse(jsonData);
 
         gameID = (long)jo.get("ID");
-        nCells = ((Long)jo.get("NC")).intValue();
+        nCells = ((Long)jo.get("NC")).byteValue();
         nPlayers = ((Long)jo.get("NP")).byteValue();
         turn = ((Long)jo.get("TR")).intValue();
         turnSkipMonitor = (Boolean)jo.get("TS");

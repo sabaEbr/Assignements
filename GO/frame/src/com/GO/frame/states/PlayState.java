@@ -35,7 +35,7 @@ public class PlayState extends GameState {
 
         playStateUI = new PlayStateUI(boardType, this);
 
-        goEngine = GoEngManager.startEngine(gameMode, playStateUI.getBoard().getnCells());
+        goEngine = GoEngManager.startEngine((byte)gameMode, (byte)playStateUI.getBoard().getnCells());
 
     }
 

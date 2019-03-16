@@ -1,0 +1,40 @@
+sequencer:
+  - java :
+      - name: network
+        source_path: src
+        java_file: src/com/GO/network/GoNetwork.java
+        class_path:
+        class_output: classes
+        jar_content: .
+        manifest: classes/manifest.txt
+
+      - name: core
+        source_path: src
+        java_file: src/com/GO/core/manager/GoEngManager.java
+        class_path: ../production/json-simple-1.1.1.jar;../production/network.jar
+        class_output: classes
+        jar_content: .
+        manifest: classes/manifest.txt
+
+      - name: frame
+        source_path: src
+        java_file: src/com/GO/frame/Window.java
+        class_path: ../production/core.jar
+        class_output: classes
+        jar_content: .
+        manifest: classes/manifest.txt
+
+      - name: launcher
+        source_path: src
+        java_file: src/com/GO/launcher/GameLauncher.java
+        class_path: ../production/frame.jar
+        class_output: classes
+        jar_content: .
+        manifest: classes/manifest.txt
+
+  - go :
+      - name: go_server
+
+project_path: C:\Users\Saba\Documents\GameRnD\GO
+
+prod_path: C:\Users\Saba\Documents\GameRnD\GO\production

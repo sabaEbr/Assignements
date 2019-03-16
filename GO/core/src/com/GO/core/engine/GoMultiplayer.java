@@ -10,11 +10,11 @@ public class GoMultiplayer extends GoEngine {
     private byte playerInGame; // 1 or 2
 
 
-    public GoMultiplayer(int mode, int nCells){
+    public GoMultiplayer(byte mode, byte nCells){
         super(mode, nCells);
 
         try {
-            network = new GoNetwork((byte)nCells);
+            network = new GoNetwork(nCells);
             unMarshall(network.getJsonGameData());
             network.setConnectionID(gameID);
         } catch (Exception e){
