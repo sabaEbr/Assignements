@@ -1,3 +1,4 @@
+import os
 import sys
 from ruamel.yaml import YAML
 from .java_util import *
@@ -6,8 +7,10 @@ from .java_util import *
 class GoGen:
 
     def __init__(self, program_path):
+        # Read generation program
         yaml = YAML()
-        self.program = yaml.load(program_path)
+        with open(program_path, 'r') as program:
+            self.program = yaml.load(program)
         self.project_path = self.program['project_path']
         self.prod_path = self.program['prod_path']
 
@@ -17,19 +20,23 @@ class GoGen:
         }
 
     def __call__(self):
-        [self.switcher.get(lang, self.nothing)(self.program['sequencer'][lang]) for lang in self.program['sequencer']]
+        os.chdir(self.project_path)
+        for lang in self.program['sequencer']:
+            self.switcher.get(lang, self.nothing)(self.program['sequencer'][lang])
+        # [self.switcher.get(lang, self.nothing)(self.program['sequencer'][lang]) for lang in self.program['sequencer']]
 
     def java_work(self, java_sequence):
-        for name, source_path, java_file, class_path, class_output, jar_content, manifest in java_sequence.items():
+        for project in java_sequence:
+            for key in project.keys():
+                exec(key + ' = \'' + str(project[key]) + '\'', globals())
+
+            print(name)
             java_build(name, source_path, java_file, class_output, class_path)
             java_lib(name, class_output, jar_content, self.prod_path, manifest)
 
     def go_work(self, go_sequence): pass
 
     def nothing(self): pass
-
-
-
 
 
 if __name__ == "__main__":
