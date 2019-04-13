@@ -1,3 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: com/GO/launcher/GameLauncher
-Class-Path: frame.jar core.jar json-simple-1.1.1.jar network.jar
